@@ -24,6 +24,13 @@ module Wacktrace
       if lines.length <= 0
         return real.call
       end
+
+      # If stack traces are being printed newest-to-oldest, we need to reverse
+      # the input lines in order to have them print out readably.
+      if detect_order == :recent_first
+        lines.reverse!
+      end
+
       lines = fix_duplicate_methods(lines)
 
       # Create a namespace for all these methods so we don't polute the global
@@ -32,8 +39,6 @@ module Wacktrace
     
       raise "add to stack missing block" unless block_given?
     
-      # puts lines
-      # replace spaces with non-breaking spaces
       lines = lines.map { |line| [clean_method_name(line[0]), line[1], line[2]] }
     
       # Define each method in series: a calls b, b calls c, and so on.  The last
@@ -161,6 +166,25 @@ module Wacktrace
 
     def add_lines_to_stack(lines, &real)
       add_to_stack(lyrics_to_stack_lines(lines), &real)
+    end
+
+    # The backtrace order varies by situation (version, tty vs file, among
+    # others). Rather than hardcoding the rules, let's just detect it.
+    def detect_order
+      begin
+        detect_order_raise
+      rescue Exception => e
+        if e.backtrace.first.include?("detect_order_raise")
+          return :recent_first
+        elsif e.backtrace.last.include?("detect_order_raise")
+          return :recent_last
+        else
+          return :undetectable
+        end
+      end
+    end
+    def detect_order_raise
+      raise 'error'
     end
   end
 end

@@ -19,9 +19,9 @@ RSpec.describe Wacktrace do
     it "adds lines to the stack trace" do
       subject
       expect(@caller_locations[1, 3]).to eq [
-        "somefile3:333:in ` somemethod3'",
-        "somefile2:222:in ` somemethod2'",
         "somefile1:111:in ` somemethod1'",
+        "somefile2:222:in ` somemethod2'",
+        "somefile3:333:in ` somemethod3'",
       ]
     end
 
@@ -106,6 +106,14 @@ gently down the stream
         ]
       )
       subject
+    end
+  end
+
+  describe 'detect_order' do
+    it 'detects order' do
+      # This seems to always be the case for non-interactive ruby 2.7 and 3.0,
+      # anyway.
+      expect(Wacktrace.send(:detect_order)).to eq :recent_first
     end
   end
 end
