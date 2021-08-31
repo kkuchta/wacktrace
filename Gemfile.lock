@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    wacktrace (1.0.0)
+    wacktrace (1.0.1)
 
 GEM
   remote: https://rubygems.org/
