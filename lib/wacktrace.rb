@@ -5,6 +5,21 @@ require_relative "wacktrace/version"
 module Wacktrace
   class Error < StandardError; end
   class << self
+    # Runs the given block with the given lines inserted into the call stack
+    # above it.  Lines should be an array like:
+    #
+    # [
+    #   ["somemethod1", 111, "somefile1"],
+    #   ["somemethod2", 222, "somefile2"],
+    #   ["somemethod3", 333, "somefile3"],
+    # ]
+    #
+    # That will result in a strack trace like:
+    #
+    #  "somefile3:333:in ` somemethod3'",
+    #  "somefile2:222:in ` somemethod2'",
+    #  "somefile1:111:in ` somemethod1'",
+    #
     def add_to_stack(lines, &real)
       if lines.length <= 0
         return real.call
@@ -33,6 +48,16 @@ module Wacktrace
       define_stack_level(container_class, last, 'ending')
       container_class.define_singleton_method("ending") { real.call }
       return container_class.send(lines.first[0])
+    end
+
+    # This is a convenience method to construct a stack trace from a single
+    # string with a bunch of newlines (eg the lyrics to a song or words to a
+    # poem).  It'll use the same filename for each line.
+    def add_to_stack_from_lyrics(lyrics, filename, &block)
+      lines = lyrics.split("\n").map.with_index do |line, i|
+        [line, i, filename]
+      end
+      add_to_stack(lines, &block)
     end
 
     private
@@ -134,15 +159,6 @@ module Wacktrace
       end
     end
 
-    def lyrics_to_stack_lines(lyrics)
-      # file = "Percy Bysshe Shelley"
-      file = "⚠️"
-      # TODO: deal with duplicate lines
-      lyrics.split("\n").map.with_index do |line, i|
-        [line, i, file]
-      end
-    end
-    
     def add_lines_to_stack(lines, &real)
       add_to_stack(lyrics_to_stack_lines(lines), &real)
     end

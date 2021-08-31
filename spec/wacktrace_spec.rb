@@ -85,4 +85,27 @@ RSpec.describe Wacktrace do
       end
     end
   end
+
+  describe 'add_to_stack_from_lyrics' do
+    let(:real_return_value) { 3 }
+    let(:real) { proc {
+      @caller_locations = caller_locations.map(&:to_s)
+      real_return_value
+    } }
+    let(:lyrics) { "
+row row row your boat
+gently down the stream
+    ".strip }
+    let(:filename) { "whatever" }
+    subject { described_class.add_to_stack_from_lyrics(lyrics, filename, &real) }
+    it "constructs lines and passes them to add_to_stack" do
+      expect(described_class).to receive(:add_to_stack).with(
+        [
+          ["row row row your boat", 0, filename],
+          ["gently down the stream", 1, filename]
+        ]
+      )
+      subject
+    end
+  end
 end
