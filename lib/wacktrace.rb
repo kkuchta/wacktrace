@@ -174,9 +174,10 @@ module Wacktrace
       begin
         detect_order_raise
       rescue Exception => e
-        if e.backtrace.first.include?("detect_order_raise")
+        trace_lines = e.full_message.split("\n")
+        if trace_lines.first.include?("detect_order_raise")
           return :recent_first
-        elsif e.backtrace.last.include?("detect_order_raise")
+        elsif trace_lines.last.include?("detect_order_raise")
           return :recent_last
         else
           return :undetectable

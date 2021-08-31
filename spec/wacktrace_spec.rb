@@ -111,9 +111,17 @@ gently down the stream
 
   describe 'detect_order' do
     it 'detects order' do
-      # This seems to always be the case for non-interactive ruby 2.7 and 3.0,
-      # anyway.
+      # Passes in ruby 3.0 only
       expect(Wacktrace.send(:detect_order)).to eq :recent_first
+    end
+
+    it 'detects recent first order' do
+      allow_any_instance_of(Exception).to receive(:full_message) { "detect_order_raise\ndetect_order\nother_method"}
+      expect(Wacktrace.send(:detect_order)).to eq :recent_first
+    end
+    it 'detects recent last order' do
+      allow_any_instance_of(Exception).to receive(:full_message) { "other_method\ndetect_order\ndetect_order_raise"}
+      expect(Wacktrace.send(:detect_order)).to eq :recent_last
     end
   end
 end
